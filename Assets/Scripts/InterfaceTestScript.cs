@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class InterfaceTestScript : MonoBehaviour
 {
@@ -8,49 +9,56 @@ public class InterfaceTestScript : MonoBehaviour
     public Sprite circleSprite;
     public Sprite nonagonSprite;
 
+    public Button trapeziumButton;
+    public Button circleButton;
+    public Button nonagonButton;
+
     void Start()
     {
-        TestTrapezium();
-        TestCircle();
-        TestNonagon();
+        // Assign Button Click Events, create shapes on click
+        trapeziumButton.onClick.AddListener(() => CreateTrapezium());
+        circleButton.onClick.AddListener(() => CreateCircle());
+        nonagonButton.onClick.AddListener(() => CreateNonagon());
     }
 
-    void TestTrapezium()
+    void CreateTrapezium()
     {
         Trapezium trapezium = new Trapezium(10, 8, 5, 7, 6);
-        Debug.Log("Trapezium Area: " + trapezium.CalculateArea());
-        Debug.Log("Trapezium Perimeter: " + trapezium.CalculatePerimeter());
-
-        CreateShape("Trapezium", trapeziumSprite, new Vector2(-5, 0));
+        CreateShape("Trapezium", trapeziumSprite, new Vector2(-5, 0), trapezium);
     }
 
-    void TestCircle()
+    void CreateCircle()
     {
         Circle circle = new Circle(5);
-        Debug.Log("Circle Area: " + circle.CalculateArea());
-        Debug.Log("Circle Perimeter: " + circle.CalculatePerimeter());
-
-        CreateShape("Circle", circleSprite, new Vector2(0, 0));
+        CreateShape("Circle", circleSprite, new Vector2(0, 0), circle);
     }
 
-    void TestNonagon()
+    void CreateNonagon()
     {
         Nonagon nonagon = new Nonagon(4);
-        Debug.Log("Nonagon Area: " + nonagon.CalculateArea());
-        Debug.Log("Nonagon Perimeter: " + nonagon.CalculatePerimeter());
-
-        CreateShape("Nonagon", nonagonSprite, new Vector2(5, 0));
+        CreateShape("Nonagon", nonagonSprite, new Vector2(5, 0), nonagon);
     }
 
-    void CreateShape(string name, Sprite sprite, Vector2 position)
+    void CreateShape(string name, Sprite sprite, Vector2 position, IShape shapeData)
     {
         GameObject shape = new GameObject(name);
         shape.transform.position = position;
 
         SpriteRenderer renderer = shape.AddComponent<SpriteRenderer>();
         renderer.sprite = sprite;
+
+        // Add Collider2D for click detection
+        shape.AddComponent<BoxCollider2D>();
+
+        // Attach click handler and assign shape data
+        ShapeClickHandler clickHandler = shape.AddComponent<ShapeClickHandler>();
+        clickHandler.SetShapeData(shapeData);
     }
 }
+
+/// <summary>
+/// Interface for shape classes
+/// </summary>
 
 public interface IShape
 {
@@ -60,6 +68,7 @@ public interface IShape
 
 public class Trapezium : IShape
 {
+    // Trapezium properties
     private float base1, base2, side1, side2, height;
 
     public Trapezium(float b1, float b2, float s1, float s2, float h)
@@ -71,16 +80,30 @@ public class Trapezium : IShape
         height = h;
     }
 
+    /// <summary>
+    /// Calculate the area of the trapezium
+    /// </summary>
+    /// <returns></returns>
+
     public float CalculateArea()
     {
         return 0.5f * (base1 + base2) * height;
     }
 
+    /// <summary>
+    /// Calculate the perimeter of the trapezium
+    /// </summary>
+    /// <returns></returns>
     public float CalculatePerimeter()
     {
         return base1 + base2 + side1 + side2;
     }
 }
+
+/// <summary>
+/// Circle class implementing IShape interface
+/// Calculates the area and perimeter of a circle
+/// </summary>
 
 public class Circle : IShape
 {
@@ -102,6 +125,10 @@ public class Circle : IShape
     }
 }
 
+/// <summary>
+/// Nonagon class implementing IShape interface
+/// Calculates the area and perimeter of a nonagon
+/// </summary>
 public class Nonagon : IShape
 {
     private float side;
